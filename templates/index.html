@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CLASSLOG — Peta Kelas</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">C</span> CLASSLOG</div>
+    <p class="side-label">WORKSPACE</p>
+    <a class="nav active" href="/">▦ &nbsp; Peta tempat duduk</a>
+    <div class="side-note">CLASSROOM MANAGEMENT</div>
+    <div class="sidebar-bottom">Versi 0.1 · Prototype</div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CLASSROOM / OVERVIEW</p>
+        <p class="subtitle">Pilih kursi untuk melihat profil dan catatan siswa.</p>
+      </div>
+      <span class="status"><span></span> Lokal</span>
+    </header>
+
+    <section class="stats">
+      <article class="stat">
+        <span>Total siswa</span>
+        <strong id="studentCount">—</strong>
+        <small>Terdaftar di kelas</small>
+      </article>
+      <article class="stat">
+        <span>Total catatan</span>
+        <strong id="recordCount">—</strong>
+        <small>Seluruh riwayat</small>
+      </article>
+      <article class="stat">
+        <span>Catatan hari ini</span>
+        <strong id="todayCount">—</strong>
+        <small id="todayDate">Hari ini</small>
+      </article>
+    </section>
+
+
+    <section class="analytics panel" id="analytics">
+      <div class="panel-heading analytics-heading">
+        <div>
+          <p class="eyebrow">DATA ANALYTICS</p>
+          <h2>Statistik kelas</h2>
+          <p>Grafik dibuat berdasarkan catatan pada database.</p>
+        </div>
+        <label class="period-control" for="chartPeriod">
+          Periode
+          <select id="chartPeriod">
+            <option value="7">7 hari terakhir</option>
+            <option value="30">30 hari terakhir</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="analytics-summary">
+        <article class="mini-stat">
+          <span>Catatan periode ini</span>
+          <strong id="periodTotal">—</strong>
+        </article>
+        <article class="mini-stat">
+          <span>Siswa dengan catatan</span>
+          <strong id="affectedTotal">—</strong>
+        </article>
+      </div>
+
+      <div class="chart-grid">
+        <article class="chart-card">
+          <h3>Tren catatan harian</h3>
+          <p>Jumlah catatan per tanggal.</p>
+          <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        </article>
+        <article class="chart-card">
+          <h3>Jenis game</h3>
+          <p>Jenis game yang tercatat paling sering.</p>
+          <div class="chart-wrap"><canvas id="gameChart"></canvas></div>
+        </article>
+        <article class="chart-card chart-wide">
+          <h3>Catatan per siswa</h3>
+          <p>Sepuluh siswa teratas berdasarkan jumlah catatan pada periode ini.</p>
+          <div class="chart-wrap tall"><canvas id="studentChart"></canvas></div>
+        </article>
+      </div>
+      <p id="chartMessage" class="message" role="status"></p>
+    </section>
+
+    <section class="workspace">
+      <div class="map-panel panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Denah kelas</h2>
+            <p>Klik salah satu kursi untuk membuka catatan.</p>
+          </div>
+          <div class="heading-actions">
+            <a class="secondary export-link" href="/api/export.csv">Ekspor CSV</a>
+            <button class="secondary" id="addStudentBtn">+ Siswa</button>
+          </div>
+        </div>
+
+        <div class="board">PAPAN TULIS</div>
+        <div class="layout-tools">
+          <label for="columnCount">Jumlah kursi per baris</label>
+          <select id="columnCount">
+            <option value="2">2 kursi</option>
+            <option value="3">3 kursi</option>
+            <option value="4" selected>4 kursi</option>
+            <option value="5">5 kursi</option>
+            <option value="6">6 kursi</option>
+            <option value="7">7 kursi</option>
+            <option value="8">8 kursi</option>
+            <option value="9">9 kursi</option>
+            <option value="10">10 kursi</option>
+          </select>
+          <button class="secondary" id="applyLayout">Atur denah</button>
+        </div>
+        <div id="layoutMessage" class="message" role="status"></div>
+        <label for="studentSearch">Cari siswa</label>
+        <input id="studentSearch" type="search"
+          placeholder="Ketik nama siswa..." autocomplete="off">
+        <div id="seatMap" class="seat-map"></div>
+        <div class="legend">
+          <span><i class="dot normal"></i> Belum ada catatan</span>
+          <span><i class="dot flagged"></i> Ada catatan</span>
+        </div>
+        <p class="demo-note">Data awal menggunakan nama contoh. Ganti dengan data kelas yang benar.</p>
+      </div>
+
+      <aside class="detail-panel panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">STUDENT PROFILE</p>
+            <h2 id="studentName">Pilih kursi</h2>
+            <p id="studentMeta">Profil siswa akan tampil di sini.</p>
+            <button class="secondary rename-button" id="editNameBtn" hidden>
+              Ubah nama
+            </button>
+          </div>
+        </div>
+
+        <div id="recordForm" hidden>
+          <div class="form-title">Tambah catatan</div>
+          <label for="game">Jenis perlakuan</label>
+          <input id="game" maxlength="100" placeholder="Contoh: Mobile Legends">
+          <label for="recordDate">Tanggal kejadian</label>
+          <input id="recordDate" type="date">
+          <label for="note">Keterangan</label>
+          <textarea id="note" maxlength="500" rows="3"
+            placeholder="Tulis kejadian secara faktual..."></textarea>
+          <button id="saveRecord" class="primary">Simpan catatan</button>
+          <p id="formMessage" class="message" role="status"></p>
+        </div>
+
+        <div class="history-heading">
+          <h3>Riwayat catatan</h3>
+          <span id="historyCount" class="count-pill">0</span>
+        </div>
+        <div id="history" class="history empty">
+          Pilih kursi untuk melihat riwayat.
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel audit-panel" id="activityLog">
+      <div class="audit-heading">
+        <div>
+          <p class="eyebrow">CLASSLOG SYSTEM</p>
+          <h2>Log aktivitas</h2>
+          <p class="audit-description">Maksimal 100 aktivitas terbaru yang tercatat.</p>
+        </div>
+        <a class="secondary export-link" href="/api/backup">Unduh backup database</a>
+      </div>
+      <div id="auditList" class="audit-list">Memuat aktivitas...</div>
+    </section>
+
+    <footer>CLASSLOG · Catatan kelas yang faktual dan bertanggung jawab.</footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
